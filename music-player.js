@@ -118,6 +118,11 @@ const player = {
 
             this.trackBackground.style.height = newTrackHeight > 0 ? `${newTrackHeight}px` : "0";
             this.trackBackground.style.opacity = newTrackHeight / trackHeight;
+            if (this.trackBackground.style.height === '0px') {
+                this.trackBackground.style.marginTop = "unset";
+            } else {
+                this.trackBackground.style.marginTop = "20px";
+            }
         });
     },
     scrollToActiveSong() {
