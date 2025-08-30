@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music player</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="./css/reset.css">
+    <link rel="stylesheet" href="./css/music-player.css">
+
+    <!-- ICON -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+        integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath d='M459.4 0L153.6 66.9C141.4 69.4 133.3 80.6 133.3 93.1V339.2C125.2 335.8 115.6 333.3 106.7 333.3 74.2 333.3 48 359.5 48 392S74.2 450.7 106.7 450.7 165.3 426.2 165.3 392V176L426.7 117.3V256c-8.1-3.4-17.8-5.3-26.7-5.3-32.5 0-58.7 26.2-58.7 58.7S367.5 368 400 368s58.7-26.2 58.7-58.7V26.7C458.7 11.9 471.3-1.3 459.4 0z'/%3E%3C/svg%3E">
+
+</head>
+
+<body>
+    <div class="wrapper">
+        <!-- Dashboard -->
+        <div class="dashboard">
+            <!-- Heading -->
+            <div class="heading">PLAYING FROM PLAYLIST:</div>
+            <!-- Play list name -->
+            <div class="playList-title">Hoàng Dũng - Yên Concert</div>
+
+            <!-- Img track -->
+            <div class="track-background" style="background: url(./img/yen-concert.jpg) center / cover;"></div>
+
+            <!-- Song -->
+            <div class="song-title">...</div>
+            <div class="song-artist">...</div>
+
+            <!-- Song progress -->
+            <div class="song-progress">
+                <input type="range" name="" id="progress" step="1" min="0" max="100" value="0" title="Song progress">
+                <div class="time-progress">
+                    <div class="time-start">0:00</div>
+                    <div class="time-end">2:43</div>
+                </div>
+            </div>
+
+            <audio class="audio" src=""></audio>
+
+            <!-- Song control btn -->
+            <div class="control">
+                <div class="btn btn-volume">
+                    <i class="fa-solid fa-volume-high icon-volume"></i>
+                </div>
+                <div class="btn btn-repeat">
+                    <i class="fa-solid fa-repeat icon-repeat"></i>
+                </div>
+                <div class="btn btn-prev">
+                    <i class="fas fa-step-backward"></i>
+                </div>
+                <div class="btn-toggle-play">
+                    <i class="fas fa-play icon-play"></i>
+                </div>
+                <div class="btn btn-next">
+                    <i class="fas fa-step-forward"></i>
+                </div>
+                <div class="btn btn-random">
+                    <i class="fas fa-random icon-random"></i>
+                </div>
+                <a href class="btn btn-download" download>
+                    <i class="fa-solid fa-download"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Play List -->
+        <div class="playlist">
+            <!-- Bài hát -->
+            <div class="song">
+                <div class="thumb"
+                    style="background: url('https://i.ytimg.com/vi/jTLhQf5KJSc/maxresdefault.jpg') center / cover;">
+                </div>
+                <div class="body">
+                    <h3 class="title">Music name</h3>
+                    <p class="artist">Artist</p>
+                </div>
+                <div class="option">
+                    <i class="fas fa-ellipsis-h"></i>
+                </div>
+            </div>
+            <!-- Các bài hát khác -->
+            <!-- .... -->
+        </div>
+    </div>
+
+    <script src="./music-player.js"></script>
+</body>
+
+</html>
