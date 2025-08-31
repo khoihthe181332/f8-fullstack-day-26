@@ -82,6 +82,7 @@ const player = {
     isSeeking: false, // Kiểm tra xem có đang tua k
     isLoop: localStorage.getItem("isLoop") === "true", // Kiểm tra xem có đang lặp bài k
     isShuffle: localStorage.getItem("isShuffle") === "true", // Kiểm tra xem có đang trộn bài k
+    isMuted: false,
     // Element
     trackBackground: $(".track-background"),
     songTitle: $(".song-title"),
@@ -97,8 +98,11 @@ const player = {
     loopBtn: $(".btn-repeat"),
     downloadBtn: $(".btn-download"),
     shuffleBtn: $(".btn-random"),
+    volumeBtn: $(".btn-volume"),
     // Icon
     iconPlay: $(".icon-play"),
+    iconVolume: $(".icon-volume"),
+    volumeRange: $("#volume"),
     getCurrentSong() {
         return this.songs[this.currentIndex];
     },
@@ -165,7 +169,7 @@ const player = {
 
         this.audio.addEventListener("timeupdate", () => {
             const { duration, currentTime } = this.audio;
-            if (!duration) return;
+            if (!duration || this.isSeeking) return;
             const process = Math.round((currentTime / duration) * 100);
             this.progress.value = process;
 
@@ -222,6 +226,71 @@ const player = {
                 this.render();
                 this.audio.play();
             };
+        });
+    },
+    handleVolumeSlide() {
+        let volumeValue = localStorage.getItem("volumeValue");
+        let isMuted = false;
+
+        if (volumeValue !== null) {
+            this.audio.volume = volumeValue;
+            this.volumeRange.value = Math.floor(this.audio.volume * 100);
+        } else {
+            this.audio.volume = 1;
+            this.volumeRange.value = 100;
+        };
+
+        this.volumeBtn.addEventListener("click", (e) => {
+            if (e.target.closest("#volume")) {
+                this.volumeRange.addEventListener("input", (e) => {
+                    volumeValue = e.target.value / 100;
+                    this.audio.volume = volumeValue;
+
+                    if (Number(volumeValue) === 0) {
+                        isMuted = true;
+                        this.iconVolume.classList.remove("fa-volume-high");
+                        this.iconVolume.classList.remove("fa-volume-low");
+                        this.iconVolume.classList.add("fa-volume-xmark");
+                    } else if (Number(volumeValue) > 0 && Number(volumeValue) <= 0.7) {
+                        isMuted = false;
+                        this.iconVolume.classList.remove("fa-volume-high");
+                        this.iconVolume.classList.remove("fa-volume-xmark");
+                        this.iconVolume.classList.add("fa-volume-low");
+                    } else {
+                        this.iconVolume.classList.remove("fa-volume-xmark");
+                        this.iconVolume.classList.remove("fa-volume-low");
+                        this.iconVolume.classList.add("fa-volume-high");
+                    }
+
+                    // Lưu vào localStorage
+                    localStorage.setItem("volumeValue", volumeValue);
+                });
+                return;
+            }
+
+            if (this.volumeBtn) {
+                isMuted = !isMuted;
+                if (isMuted) {
+                    volumeValue = 0;
+                    this.volumeRange.value = 0;
+                    this.iconVolume.classList.remove("fa-volume-high");
+                    this.iconVolume.classList.remove("fa-volume-low");
+                    this.iconVolume.classList.add("fa-volume-xmark");
+                } else {
+                    volumeValue = 1;
+                    this.volumeRange.value = 100;
+                    this.iconVolume.classList.remove("fa-volume-xmark");
+                    this.iconVolume.classList.remove("fa-volume-low");
+                    this.iconVolume.classList.add("fa-volume-high");
+                }
+                this.audio.volume = volumeValue;
+                // Lưu vào localStorage
+                localStorage.setItem("volumeValue", volumeValue);
+            }
+        });
+
+        this.audio.addEventListener("volumechange", () => {
+            this.volumeRange.value = Math.floor(this.audio.volume * 100);
         });
     },
     render() {
@@ -291,6 +360,9 @@ const player = {
             const currentSong = this.getCurrentSong();
             this.downloadBtn.href = currentSong.path;
         });
+
+        // Xử lý sự kiện Tăng giảm âm lượng
+        this.handleVolumeSlide();
 
         this.render();
 

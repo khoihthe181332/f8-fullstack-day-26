@@ -53,6 +53,7 @@ body {
     background-color: #000000;
     -webkit-user-select: none;
     user-select: none;
+    overflow: hidden;
     position: fixed;
 }
 
@@ -91,11 +92,11 @@ body {
     /* Chrome, Safari, Opera */
     appearance: none;
     /* Standard */
-    width: 100%;
+    width: 99%;
     height: 6px;
     background: #d3d3d3;
     outline: none;
-    border-radius: 3px;
+    border-radius: 5px;
     cursor: pointer;
 }
 
@@ -235,4 +236,39 @@ body {
 
 .song .option:hover {
     background-color: #ffffff10;
+}
+
+/* Volume */
+#volume {
+    -webkit-appearance: none;
+    /* Chrome, Safari, Opera */
+    appearance: none;
+    /* Standard */
+    outline: none;
+    cursor: pointer;
+    height: 7px;
+    background: #d3d3d3;
+    border-radius: 5px;
+    margin-left: 0;
+    width: 0;
+    opacity: 0;
+    visibility: visible;
+
+    transition: all 0.4s ease;
+}
+
+#volume::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 11px;
+    height: 11px;
+    background-color: #0f7284;
+    border-radius: 50%;
+}
+
+.btn-volume:hover #volume {
+    margin-left: 7px;
+    width: 100px;
+    opacity: 1;
+    visibility: visible;
 }
