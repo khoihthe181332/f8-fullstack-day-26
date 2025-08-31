@@ -78,11 +78,20 @@ const player = {
     // Khởi tạo
     NEXT: 1,
     PREV: -1,
-    currentIndex: 0,
+    currentIndex: Number(localStorage.getItem("currentIndex")) || 0, // Lưu bài hát hiện tại 
     isSeeking: false, // Kiểm tra xem có đang tua k
     isLoop: localStorage.getItem("isLoop") === "true", // Kiểm tra xem có đang lặp bài k
     isShuffle: localStorage.getItem("isShuffle") === "true", // Kiểm tra xem có đang trộn bài k
     isMuted: false,
+
+    songQueue: [], // Danh sách chờ 
+
+    /**
+     * songs có bao nhiêu bài thì songQueue có bấy nhiêu bài 
+     * khi shuffle được bật thì sẽ random các bài trong songQueue và dùng songQueue[]
+     * khi tắt shuffle thì dùng songs[]
+     */
+
     // Element
     trackBackground: $(".track-background"),
     songTitle: $(".song-title"),
@@ -103,6 +112,10 @@ const player = {
     iconPlay: $(".icon-play"),
     iconVolume: $(".icon-volume"),
     volumeRange: $("#volume"),
+
+    _setConfig(key, value) {
+        localStorage.setItem(key, value);
+    },
     getCurrentSong() {
         return this.songs[this.currentIndex];
     },
@@ -113,6 +126,25 @@ const player = {
         this.trackBackground.style.background = `url(${currentSong.img}) no-repeat center / contain`;
         this.audio.src = currentSong.path;
     },
+    swapSong(step) {
+        this.currentIndex = (this.currentIndex + step + this.songs.length) % this.songs.length;
+        this.loadCurrentSong();
+        this.render();
+        this.scrollToActiveSong();
+        this.audio.play();
+
+        this._setConfig("currentIndex", this.currentIndex);
+    },
+    // Trộn mảng
+    shuffleArray(array) {
+        const result = [...array];
+        for (let i = result.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [result[i], result[j]] = [result[j], result[i]];
+        }
+        return result;
+    },
+    // Xử lý cuộn danh sách bài hát
     scrollPlayList() {
         const trackHeight = this.trackBackground.offsetHeight;
 
@@ -129,6 +161,7 @@ const player = {
             }
         });
     },
+    // Cuộn tới vị trí bài hát đang đc phát
     scrollToActiveSong() {
         // const activeSong = $(".song.active");
         // activeSong.scrollIntoView({
@@ -136,27 +169,47 @@ const player = {
         //     block: "nearest",
         // });
     },
-    swapSong(step) {
-        this.currentIndex = (this.currentIndex + step + this.songs.length) % this.songs.length;
-        this.loadCurrentSong();
-        this.render();
-        this.scrollToActiveSong();
-        this.audio.play();
-    },
+    // Xử lý nút next / prev 
     handleSongChange() {
+
+        const oneSong = () => {
+            if (this.songs.length <= 1) {
+                this.audio.play();
+                return true;
+            }
+            return false;
+        };
+
         this.nextBtn.addEventListener("click", () => {
-            this.swapSong(this.NEXT);
+            // Nếu có 1 bài thì sẽ phát lại chính bài đó
+            if (oneSong()) return;
+
+            // Xử lý khi bật trộn bài 
+            if (this.isShuffle) {
+                console.log(songQueue);
+            } else {
+                // Khi tắt shuffle, chuyển bài theo thứ tự
+                this.swapSong(this.NEXT);
+            }
         });
 
         this.prevBtn.addEventListener("click", () => {
+            // Nếu có 1 bài thì sẽ phát lại chính bài đó
+            if (oneSong()) return;
+
+            // Xử lý khi bật trộn bài 
             if (this.audio.currentTime < 2) {
+                if (this.isShuffle) {
+                    // ...
+                }
                 this.swapSong(this.PREV);
             } else {
                 this.audio.currentTime = 0;
             }
         });
     },
-    handleSongProgress() {
+    // Xử lý thời lượng bài hát
+    handleSongDuration() {
         const timeStart = document.querySelector(".time-start");
         const timeEnd = document.querySelector(".time-end");
 
@@ -192,22 +245,31 @@ const player = {
             this.audio.currentTime = nextDuration;
         });
     },
+    // Xử lý lặp bài hát
     handleSongLoop() {
         this.loopBtn.addEventListener("click", () => {
             this.isLoop = !this.isLoop;
             this.loopBtn.classList.toggle("active", this.isLoop);
             // lưu vào LocalStorage
-            localStorage.setItem("isLoop", this.isLoop);
+            this._setConfig("isLoop", this.isLoop);
         });
     },
+    // Xử lý trộn bài hát (phát ngẫu nhiên)
     handleShuffleSong() {
         this.shuffleBtn.addEventListener("click", () => {
             this.isShuffle = !this.isShuffle;
             this.shuffleBtn.classList.toggle("active", this.isShuffle);
+
+            // Khi bật trộn bài reset về mảng rỗng
+            if (this.isShuffle) {
+                this.songQueue = [];
+            }
+
             // lưu vào LocalStorage
-            localStorage.setItem("isShuffle", this.isShuffle);
+            this._setConfig("isShuffle", this.isShuffle);
         });
     },
+    // Xử lý chọn bài hát
     handleChooseSong() {
         this.playList.addEventListener("click", (e) => {
             const optionBtn = e.target.closest(".option");
@@ -225,9 +287,12 @@ const player = {
                 this.loadCurrentSong();
                 this.render();
                 this.audio.play();
+
+                this._setConfig("currentIndex", this.currentIndex);
             };
         });
     },
+    // Xử lý tăng / giảm âm lượng
     handleVolumeSlide() {
         let volumeValue = localStorage.getItem("volumeValue");
         let isMuted = false;
@@ -263,7 +328,7 @@ const player = {
                     }
 
                     // Lưu vào localStorage
-                    localStorage.setItem("volumeValue", volumeValue);
+                    this._setConfig("volumeValue", volumeValue);
                 });
                 return;
             }
@@ -285,7 +350,7 @@ const player = {
                 }
                 this.audio.volume = volumeValue;
                 // Lưu vào localStorage
-                localStorage.setItem("volumeValue", volumeValue);
+                this._setConfig("volumeValue", volumeValue);
             }
         });
 
@@ -293,6 +358,7 @@ const player = {
             this.volumeRange.value = Math.floor(this.audio.volume * 100);
         });
     },
+    // Render bài hát
     render() {
         const renderSong = this.songs.map((song, index) => {
             return `<div class="song ${this.currentIndex === index ? "active" : ""} " 
@@ -337,8 +403,8 @@ const player = {
         // Xử lý sự kiện Next / Prev bài hát
         this.handleSongChange();
 
-        // Xử lý sự kiện Progress bài hát
-        this.handleSongProgress();
+        // Xử lý sự kiện thời lượng bài hát
+        this.handleSongDuration();
 
         // Khi hết tự động next bài
         this.audio.addEventListener("ended", () => {
@@ -349,24 +415,24 @@ const player = {
             }
         });
 
-        // Xử lý sự kiện Loop bài hát
+        // Xử lý sự kiện lặp bài hát
         this.handleSongLoop();
 
-        // Xử lý sự kiện Shuffle bài hát
+        // Xử lý sự kiện trộn bài hát
         this.handleShuffleSong();
 
-        // Xử lý sự kiện Download bài hát
+        // Xử lý sự kiện tải bài hát
         this.downloadBtn.addEventListener("click", () => {
             const currentSong = this.getCurrentSong();
             this.downloadBtn.href = currentSong.path;
         });
 
-        // Xử lý sự kiện Tăng giảm âm lượng
+        // Xử lý sự kiện tăng / giảm âm lượng
         this.handleVolumeSlide();
 
         this.render();
 
-        // Xử lý sự kiện Chọn bài hát
+        // Xử lý sự kiện chọn bài hát
         this.handleChooseSong();
 
         // Cập nhật trạng thái nút loop, shuffle, ...
