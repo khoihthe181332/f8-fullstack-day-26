@@ -135,6 +135,60 @@ const player = {
 
         this._setConfig("currentIndex", this.currentIndex);
     },
+    // Method để debug - có thể bỏ khi không cần
+    logCurrentQueue() {
+        if (this.isShuffle && this.songQueue.length > 0) {
+            console.log("Song Queue:", this.songQueue.map(song => song.name));
+            console.log("Current song in queue:", this.getCurrentQueueIndex());
+        }
+    },
+    // Song Queue
+    updateSongQueue() {
+        if (this.isShuffle) {
+            // Nếu songQueue rỗng hoặc cần tạo mới, tạo queue trộn mới
+            if (this.songQueue.length === 0) {
+                const currentSong = this.getCurrentSong();
+
+                // Tạo mảng các bài hát còn lại (loại trừ bài đang phát)
+                const otherSongs = this.songs.filter(song => song.id !== currentSong.id);
+
+                // Trộn các bài còn lại
+                const shuffledOthers = this.shuffleArray(otherSongs);
+
+                // Đặt bài hiện tại lên đầu, sau đó là các bài đã trộn
+                this.songQueue = [currentSong, ...shuffledOthers];
+            }
+        } else {
+            // Khi tắt shuffle, xóa queue
+            this.songQueue = [];
+        }
+    },
+    getCurrentQueueIndex() {
+        if (!this.isShuffle || this.songQueue.length === 0) {
+            return this.currentIndex;
+        }
+        // Tìm vị trí bài hát hiện tại trong songQueue
+        const currentSong = this.songs[this.currentIndex];
+        return this.songQueue.findIndex(song => song.id === currentSong.id);
+    },
+    getNextSongFromQueue(direction) {
+        const queueIndex = this.getCurrentQueueIndex();
+        let nextQueueIndex;
+
+        if (direction === this.NEXT) {
+            nextQueueIndex = (queueIndex + 1) % this.songQueue.length;
+        } else {
+            // Xử lý prev: nếu đang ở bài đầu tiên (index 0) thì không chuyển bài
+            if (queueIndex === 0) {
+                return this.currentIndex; // Trả về chính bài hiện tại
+            }
+            nextQueueIndex = queueIndex - 1;
+        }
+
+        const nextSong = this.songQueue[nextQueueIndex];
+        // Trả về index của bài hát trong mảng songs gốc
+        return this.songs.findIndex(song => song.id === nextSong.id);
+    },
     // Trộn mảng
     shuffleArray(array) {
         const result = [...array];
@@ -171,7 +225,6 @@ const player = {
     },
     // Xử lý nút next / prev 
     handleSongChange() {
-
         const oneSong = () => {
             if (this.songs.length <= 1) {
                 this.audio.play();
@@ -186,7 +239,15 @@ const player = {
 
             // Xử lý khi bật trộn bài 
             if (this.isShuffle) {
-                console.log(songQueue);
+                // Đảm bảo có songQueue
+                this.updateSongQueue();
+                const nextIndex = this.getNextSongFromQueue(this.NEXT);
+                this.currentIndex = nextIndex;
+                this.loadCurrentSong();
+                this.render();
+                this.scrollToActiveSong();
+                this.audio.play();
+                this._setConfig("currentIndex", this.currentIndex);
             } else {
                 // Khi tắt shuffle, chuyển bài theo thứ tự
                 this.swapSong(this.NEXT);
@@ -200,9 +261,25 @@ const player = {
             // Xử lý khi bật trộn bài 
             if (this.audio.currentTime < 2) {
                 if (this.isShuffle) {
-                    // ...
+                    // Đảm bảo có songQueue
+                    this.updateSongQueue();
+                    const prevIndex = this.getNextSongFromQueue(this.PREV);
+
+                    // Nếu đang ở bài đầu tiên trong queue, chỉ reset thời gian
+                    if (prevIndex === this.currentIndex) {
+                        this.audio.currentTime = 0;
+                        this.audio.play();
+                    } else {
+                        this.currentIndex = prevIndex;
+                        this.loadCurrentSong();
+                        this.render();
+                        this.scrollToActiveSong();
+                        this.audio.play();
+                        this._setConfig("currentIndex", this.currentIndex);
+                    }
+                } else {
+                    this.swapSong(this.PREV);
                 }
-                this.swapSong(this.PREV);
             } else {
                 this.audio.currentTime = 0;
             }
@@ -260,9 +337,11 @@ const player = {
             this.isShuffle = !this.isShuffle;
             this.shuffleBtn.classList.toggle("active", this.isShuffle);
 
-            // Khi bật trộn bài reset về mảng rỗng
+            // Cập nhật songQueue khi thay đổi isShuffle
+            this.updateSongQueue();
+
             if (this.isShuffle) {
-                this.songQueue = [];
+                console.log(this.songQueue);
             }
 
             // lưu vào LocalStorage
@@ -411,7 +490,19 @@ const player = {
             if (this.isLoop) {
                 this.audio.play();
             } else {
-                this.swapSong(this.NEXT);
+                // Sử dụng logic tương tự như nút next
+                if (this.isShuffle) {
+                    this.updateSongQueue();
+                    const nextIndex = this.getNextSongFromQueue(this.NEXT);
+                    this.currentIndex = nextIndex;
+                    this.loadCurrentSong();
+                    this.render();
+                    this.scrollToActiveSong();
+                    this.audio.play();
+                    this._setConfig("currentIndex", this.currentIndex);
+                } else {
+                    this.swapSong(this.NEXT);
+                }
             }
         });
 
@@ -438,6 +529,11 @@ const player = {
         // Cập nhật trạng thái nút loop, shuffle, ...
         this.loopBtn.classList.toggle("active", this.isLoop);
         this.shuffleBtn.classList.toggle("active", this.isShuffle);
+
+        // Khởi tạo songQueue nếu shuffle đang bật
+        if (this.isShuffle) {
+            this.updateSongQueue();
+        }
     },
 }
 
