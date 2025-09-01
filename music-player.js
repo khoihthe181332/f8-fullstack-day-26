@@ -104,7 +104,6 @@ const player = {
     songQueueSidebar: $(".song-queue-sidebar"),
     songQueueList: $(".song-queue-list"),
     sidebarOverlay: $(".sidebar-overlay"),
-    songQueueBtn: $(".btn-songQueue"),
     closeSidebarBtn: $(".close-sidebar"),
 
     // Button
@@ -115,6 +114,7 @@ const player = {
     downloadBtn: $(".btn-download"),
     shuffleBtn: $(".btn-random"),
     volumeBtn: $(".btn-volume"),
+    songQueueBtn: $(".btn-songQueue"),
     // Icon
     iconPlay: $(".icon-play"),
     iconVolume: $(".icon-volume"),
@@ -210,6 +210,7 @@ const player = {
         // Đóng sidebar
         this.songQueueSidebar.classList.remove("open");
         this.sidebarOverlay.classList.remove("show");
+        this.songQueueBtn.classList.remove("active");
 
         // Kích hoạt lại scroll của body
         document.body.classList.remove("no-scroll");
@@ -219,7 +220,7 @@ const player = {
             // Mở sidebar
             this.songQueueSidebar.classList.add("open");
             this.sidebarOverlay.classList.add("show");
-
+            this.songQueueBtn.classList.add("active");
             // Vô hiệu hóa scroll của body
             document.body.classList.add("no-scroll");
 
@@ -352,6 +353,7 @@ const player = {
     handleSongDuration() {
         const timeStart = document.querySelector(".time-start");
         const timeEnd = document.querySelector(".time-end");
+        const progressBar = this.progress;
 
         // Hàm định dạng thời gian từ giây sang mm:ss
         const formatTime = (seconds) => {
@@ -360,11 +362,24 @@ const player = {
             return `${min}:${sec}`;
         };
 
+        // Hàm cập nhật thanh tiến độ
+        const updateProgressBar = (currentTime, duration) => {
+            if (!duration) return;
+            const progressPercent = (currentTime / duration) * 100;
+
+            // Cập nhật width của pseudo-element ::before thông qua CSS custom property
+            progressBar.style.setProperty('--progress-width', `${progressPercent}%`);
+
+            // Cập nhật value của range input để thumb di chuyển
+            progressBar.value = Math.round(progressPercent);
+        };
+
         this.audio.addEventListener("timeupdate", () => {
             const { duration, currentTime } = this.audio;
             if (!duration || this.isSeeking) return;
-            const process = Math.round((currentTime / duration) * 100);
-            this.progress.value = process;
+
+            // Cập nhật thanh tiến độ
+            updateProgressBar(currentTime, duration);
 
             // Cập nhật hiển thị thời gian
             if (timeStart) {
@@ -375,14 +390,27 @@ const player = {
             }
         });
 
+        // Khi bắt đầu tua
         this.progress.addEventListener("pointerdown", () => {
             this.isSeeking = true;
         });
 
+        // Khi thả ra sau tua
         this.progress.addEventListener("pointerup", (e) => {
             this.isSeeking = false;
             const nextDuration = (e.target.value / 100) * this.audio.duration;
             this.audio.currentTime = nextDuration;
+
+            // Cập nhật ngay lập tức thanh tiến độ sau khi tua
+            updateProgressBar(nextDuration, this.audio.duration);
+        });
+
+        // Xử lý khi di chuyển thumb (tùy chọn - để xem preview khi drag)
+        this.progress.addEventListener("input", (e) => {
+            if (this.isSeeking && this.audio.duration) {
+                const previewTime = (e.target.value / 100) * this.audio.duration;
+                timeStart.textContent = formatTime(previewTime);
+            }
         });
     },
     // Xử lý lặp bài hát

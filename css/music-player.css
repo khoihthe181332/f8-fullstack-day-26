@@ -101,24 +101,55 @@ a {
 
 #progress {
     -webkit-appearance: none;
-    /* Chrome, Safari, Opera */
     appearance: none;
-    /* Standard */
     width: 99%;
     height: 6px;
     background: #d3d3d3;
     outline: none;
     border-radius: 5px;
     cursor: pointer;
+    position: relative;
+}
+
+/* Thanh tiến độ động */
+#progress {
+    --progress-width: 0%;
+}
+
+#progress::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(to right, #0f7284, #7ceeff);
+    border-radius: 5px;
+    width: var(--progress-width);
+    transition: width 0.1s linear;
+    z-index: 1;
 }
 
 #progress::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 13px;
-    height: 6px;
-    background-color: #0f7284;
-    border-radius: 3px;
+    height: 13px;
+    background-color: #ffffff;
+    border: 2px solid #0f7284;
+    border-radius: 50%;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s linear;
+}
+
+#progress:hover::-webkit-slider-thumb {
+    opacity: 1;
+    visibility: visible;
 }
 
 .time-progress {
