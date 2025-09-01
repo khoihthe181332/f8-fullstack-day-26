@@ -353,16 +353,54 @@ const player = {
         this.playList.addEventListener("click", (e) => {
             const optionBtn = e.target.closest(".option");
             const songNotActive = e.target.closest(".song:not(.active)");
+
             // Bắt sự kiện click nút option
             if (optionBtn) {
                 e.stopPropagation();
-                console.log("Option click");
+
+                // Lấy index của bài hát từ data-song-index
+                const songIndex = optionBtn.getAttribute("data-song-index");
+                const subOption = document.getElementById(`sub-option-${songIndex}`);
+
+                // Đóng tất cả sub-option khác trước
+                const allSubOptions = document.querySelectorAll(".sub-option");
+                allSubOptions.forEach(option => {
+                    if (option.id !== `sub-option-${songIndex}`) {
+                        option.classList.remove("open");
+                    }
+                });
+
+                // Toggle sub-option của bài hiện tại
+                subOption.classList.toggle("open");
+
+                // Xử lý click outside để đóng menu
+                const handleClickOutside = (event) => {
+                    if (!optionBtn.contains(event.target)) {
+                        subOption.classList.remove("open");
+                        document.removeEventListener("click", handleClickOutside);
+                    }
+                };
+
+                // Chỉ thêm event listener nếu menu đang mở
+                if (subOption.classList.contains("open")) {
+                    // Sử dụng setTimeout để tránh việc event này trigger ngay lập tức
+                    setTimeout(() => {
+                        document.addEventListener("click", handleClickOutside);
+                    }, 0);
+                }
+
                 return;
             }
 
             // Bắt sự kiện song k có .active
             if (songNotActive) {
                 this.currentIndex = Number(songNotActive.getAttribute("data-index"));
+
+                // Reset songQueue nếu đang shuffle để tạo queue mới với bài vừa chọn
+                if (this.isShuffle) {
+                    this.songQueue = [];
+                }
+
                 this.loadCurrentSong();
                 this.render();
                 this.audio.play();
@@ -441,18 +479,24 @@ const player = {
     render() {
         const renderSong = this.songs.map((song, index) => {
             return `<div class="song ${this.currentIndex === index ? "active" : ""} " 
-                        data-index="${index}">
-                <div class="thumb"
-                    style="background: url('${song.img}') center / cover;">
+                    data-index="${index}">
+            <div class="thumb"
+                style="background: url('${song.img}') center / cover;">
+            </div>
+            <div class="body">
+                <h3 class="title">${song.name}</h3>
+                <p class="artist">${song.artist}</p>
+            </div>
+            <div class="option" data-song-index="${index}">
+                <i class="fas fa-ellipsis-h"></i>
+                <div class="sub-option" id="sub-option-${index}">
+                    <a href="${song.path}" class="btn btn-download" download>
+                        <i class="fa-solid fa-download"></i>
+                        <span>Tải xuống</span>
+                    </a>
                 </div>
-                <div class="body">
-                    <h3 class="title">${song.name}</h3>
-                    <p class="artist">${song.artist}</p>
-                </div>
-                <div class="option">
-                    <i class="fas fa-ellipsis-h"></i>
-                </div>
-            </div > `
+            </div>
+        </div > `
         }).join("");
         this.playList.innerHTML = renderSong;
     },
@@ -511,12 +555,6 @@ const player = {
 
         // Xử lý sự kiện trộn bài hát
         this.handleShuffleSong();
-
-        // Xử lý sự kiện tải bài hát
-        this.downloadBtn.addEventListener("click", () => {
-            const currentSong = this.getCurrentSong();
-            this.downloadBtn.href = currentSong.path;
-        });
 
         // Xử lý sự kiện tăng / giảm âm lượng
         this.handleVolumeSlide();

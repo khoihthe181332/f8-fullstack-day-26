@@ -20,6 +20,10 @@ body {
     background-color: #000;
 }
 
+a {
+    text-decoration: none;
+}
+
 /* Dashboard */
 .wrapper {
     width: 100vw;
@@ -55,6 +59,7 @@ body {
     user-select: none;
     overflow: hidden;
     position: fixed;
+    z-index: 100;
 }
 
 .track-background {
@@ -236,6 +241,56 @@ body {
 
 .song .option:hover {
     background-color: #ffffff10;
+}
+
+/* Song download */
+.option .btn {
+    color: #666;
+    padding: 11px 8px;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.option {
+    position: relative;
+}
+
+.option .sub-option {
+    background-color: rgba(40, 40, 40, 255);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    min-width: 110px;
+    border-radius: 6px;
+    cursor: pointer;
+    filter: drop-shadow(2px 2px 5px #ffffff40);
+
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.1s linear;
+}
+
+.option .sub-option::before {
+    content: "";
+    position: absolute;
+    border: 6px solid;
+    border-color: transparent transparent rgba(40, 40, 40, 255);
+    bottom: 100%;
+    left: 13%;
+}
+
+.sub-option.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.option .btn-download {
+    display: flex;
+    gap: 6px;
+    padding: 6px;
 }
 
 /* Volume */
