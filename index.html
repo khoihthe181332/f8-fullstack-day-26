@@ -23,6 +23,21 @@
 
 <body>
     <div class="wrapper">
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay"></div>
+
+        <!-- Song Queue Sidebar -->
+        <div class="song-queue-sidebar">
+            <div class="song-queue-header">
+                <h2 class="song-queue-title">Danh sách chờ</h2>
+                <button class="close-sidebar" aria-label="Close sidebar" title="Close sidebar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="song-queue-list">
+                <!-- Song queue items will be rendered here -->
+            </div>
+        </div>
         <!-- Dashboard -->
         <div class="dashboard">
             <!-- Heading -->
@@ -51,16 +66,16 @@
             <!-- Song control btn -->
             <div class="control">
                 <!-- volume -->
-                <div class="btn btn-volume">
+                <div class="btn btn-volume" title="Âm lượng">
                     <i class="fa-solid fa-volume-high icon-volume"></i>
                     <input type="range" name value="100" class="" id="volume" min="0" max="100" title="Âm lượng">
                 </div>
                 <!-- loop -->
-                <div class="btn btn-repeat">
+                <div class="btn btn-repeat" title="Lặp">
                     <i class="fa-solid fa-repeat icon-repeat"></i>
                 </div>
                 <!-- prev -->
-                <div class="btn btn-prev">
+                <div class="btn btn-prev" title="Trước">
                     <i class="fas fa-step-backward"></i>
                 </div>
                 <!-- play / pause -->
@@ -68,15 +83,15 @@
                     <i class="fas fa-play icon-play"></i>
                 </div>
                 <!-- next -->
-                <div class="btn btn-next">
+                <div class="btn btn-next" title="Sau">
                     <i class="fas fa-step-forward"></i>
                 </div>
                 <!-- shuffle -->
-                <div class="btn btn-random">
+                <div class="btn btn-random" title="Trộn">
                     <i class="fas fa-random icon-random"></i>
                 </div>
                 <!-- Menu Song Queue -->
-                <div class="btn btn-songQueue">
+                <div class="btn btn-songQueue" title="Danh sách chờ">
                     <i class="fa-solid fa-bars"></i>
                 </div>
             </div>
@@ -85,26 +100,6 @@
         <!-- Play List -->
         <div class="playlist">
             <!-- Bài hát -->
-            <div class="song">
-                <div class="thumb"
-                    style="background: url('https://i.ytimg.com/vi/jTLhQf5KJSc/maxresdefault.jpg') center / cover;">
-                </div>
-                <div class="body">
-                    <h3 class="title">Music name</h3>
-                    <p class="artist">Artist</p>
-                </div>
-                <div class="option">
-                    <i class="fas fa-ellipsis-h"></i>
-                    <div class="sub-option">
-                        <!-- download -->
-                        <a href="" class="btn btn-download" download>
-                            <i class="fa-solid fa-download"></i>
-                            <span>Tải xuống</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <!-- Các bài hát khác -->
             <!-- .... -->
         </div>
     </div>

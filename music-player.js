@@ -100,6 +100,13 @@ const player = {
     progress: $("#progress"),
     song: $(".song"),
     playList: $(".playlist"),
+
+    songQueueSidebar: $(".song-queue-sidebar"),
+    songQueueList: $(".song-queue-list"),
+    sidebarOverlay: $(".sidebar-overlay"),
+    songQueueBtn: $(".btn-songQueue"),
+    closeSidebarBtn: $(".close-sidebar"),
+
     // Button
     playToggleBtn: $(".btn-toggle-play"),
     nextBtn: $(".btn-next"),
@@ -141,6 +148,15 @@ const player = {
             console.log("Song Queue:", this.songQueue.map(song => song.name));
             console.log("Current song in queue:", this.getCurrentQueueIndex());
         }
+    },
+    // Trộn mảng
+    shuffleArray(array) {
+        const result = [...array];
+        for (let i = result.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [result[i], result[j]] = [result[j], result[i]];
+        }
+        return result;
     },
     // Song Queue
     updateSongQueue() {
@@ -189,14 +205,61 @@ const player = {
         // Trả về index của bài hát trong mảng songs gốc
         return this.songs.findIndex(song => song.id === nextSong.id);
     },
-    // Trộn mảng
-    shuffleArray(array) {
-        const result = [...array];
-        for (let i = result.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [result[i], result[j]] = [result[j], result[i]];
-        }
-        return result;
+    // Đóng songQueue
+    closeSongQueue() {
+        // Đóng sidebar
+        this.songQueueSidebar.classList.remove("open");
+        this.sidebarOverlay.classList.remove("show");
+
+        // Kích hoạt lại scroll của body
+        document.body.classList.remove("no-scroll");
+    },
+    handleSongQueueSidebar() {
+        this.songQueueBtn.addEventListener("click", () => {
+            // Mở sidebar
+            this.songQueueSidebar.classList.add("open");
+            this.sidebarOverlay.classList.add("show");
+
+            // Vô hiệu hóa scroll của body
+            document.body.classList.add("no-scroll");
+
+            this.renderSongQueue();
+        });
+
+        this.closeSidebarBtn.addEventListener("click", () => {
+            this.closeSongQueue();
+        });
+
+        this.sidebarOverlay.addEventListener("click", () => {
+            this.closeSongQueue();
+        });
+
+        // Xử lý phím ESC để đóng queue
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && this.songQueueSidebar.classList.contains("open")) {
+                this.closeSongQueue();
+            }
+        });
+    },
+    handleQueueSongSelect() {
+        this.songQueueList.addEventListener("click", (e) => {
+            const queueSong = e.target.closest(".queue-song");
+            if (queueSong && !queueSong.classList.contains("current")) {
+                const songIndex = Number(queueSong.getAttribute("data-song-index"));
+                this.currentIndex = songIndex;
+
+                if (this.isShuffle) {
+                    this.songQueue = [];
+                }
+
+                this.loadCurrentSong();
+                this.render();
+                this.renderSongQueue();
+                this.audio.play();
+
+                this._setConfig("currentIndex", this.currentIndex);
+            }
+        });
     },
     // Xử lý cuộn danh sách bài hát
     scrollPlayList() {
@@ -500,6 +563,27 @@ const player = {
         }).join("");
         this.playList.innerHTML = renderSong;
     },
+    // Render Song Queue
+    renderSongQueue() {
+        const songsToRender = this.isShuffle && this.songQueue.length > 0 ? this.songQueue : this.songs;
+        const currentSong = this.getCurrentSong();
+
+        const renderQueue = songsToRender.map((song, index) => {
+            const originalIndex = this.songs.findIndex(s => s.id === song.id);
+            const isCurrent = song.id === currentSong.id;
+
+            return `<div class="queue-song ${isCurrent ? 'current' : ''}" 
+                data-song-index="${originalIndex}">
+            <div class="queue-index">${index + 1}</div>
+            <div class="queue-thumb" style="background: url('${song.img}') center / cover;"></div>
+            <div class="queue-body">
+                <div class="queue-title">${song.name}</div>
+                <div class="queue-artist">${song.artist}</div>
+            </div>
+        </div>`
+        }).join("");
+        this.songQueueList.innerHTML = renderQueue;
+    },
 
     init() {
         this.loadCurrentSong(); // lấy bài hát đầu tiên
@@ -572,6 +656,12 @@ const player = {
         if (this.isShuffle) {
             this.updateSongQueue();
         }
+
+        // Xử lý Song Queue Sidebar
+        this.handleSongQueueSidebar();
+
+        // Xử lý chọn bài từ queue  
+        this.handleQueueSongSelect();
     },
 }
 
