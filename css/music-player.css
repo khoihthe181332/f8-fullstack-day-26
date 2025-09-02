@@ -12,13 +12,16 @@
 
 html {
     font-size: 62.5%;
+    background-color: #000;
+    overscroll-behavior: none;
 }
 
 body {
     font-size: inherit;
     color: #fff;
-    background-color: #000;
     overflow-x: hidden;
+    width: 100vw;
+    height: 100vh;
 }
 
 /* Vô hiệu hóa cuộn khi songQueue được mở */
@@ -33,8 +36,8 @@ a {
 
 /* Dashboard */
 .wrapper {
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -299,12 +302,11 @@ a {
 .option .sub-option {
     background-color: rgba(40, 40, 40, 255);
     position: absolute;
-    left: 0;
+    right: 0;
     top: 100%;
     min-width: 110px;
     border-radius: 6px;
     cursor: pointer;
-    filter: drop-shadow(2px 2px 5px #ffffff40);
 
     opacity: 0;
     visibility: hidden;
@@ -314,10 +316,10 @@ a {
 .option .sub-option::before {
     content: "";
     position: absolute;
-    border: 6px solid;
+    border: 8px solid;
     border-color: transparent transparent rgba(40, 40, 40, 255);
     bottom: 100%;
-    left: 13%;
+    right: 13%;
 }
 
 .sub-option.open {

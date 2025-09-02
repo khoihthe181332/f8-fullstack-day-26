@@ -179,6 +179,7 @@ const player = {
             this.songQueue = [];
         }
     },
+    // Hàm lấy ra index bài hát trong danh sách chờ
     getCurrentQueueIndex() {
         if (!this.isShuffle || this.songQueue.length === 0) {
             return this.currentIndex;
@@ -204,6 +205,17 @@ const player = {
         const nextSong = this.songQueue[nextQueueIndex];
         // Trả về index của bài hát trong mảng songs gốc
         return this.songs.findIndex(song => song.id === nextSong.id);
+    },
+    updateCurrentQueuePosition() {
+        if (this.isShuffle && this.songQueue.length > 0) {
+            const currentSong = this.getCurrentSong();
+            const currentQueueIndex = this.songQueue.findIndex(song => song.id === currentSong.id);
+
+            // Nếu bài hiện tại không có trong queue, thêm vào đầu queue
+            if (currentQueueIndex === -1) {
+                this.songQueue.unshift(currentSong);
+            }
+        }
     },
     // Đóng songQueue
     closeSongQueue() {
@@ -249,13 +261,12 @@ const player = {
                 const songIndex = Number(queueSong.getAttribute("data-song-index"));
                 this.currentIndex = songIndex;
 
-                if (this.isShuffle) {
-                    this.songQueue = [];
-                }
+                // KHÔNG reset songQueue khi chọn bài từ queue
+                // Chỉ cập nhật currentIndex và render lại
 
                 this.loadCurrentSong();
                 this.render();
-                this.renderSongQueue();
+                this.renderSongQueue(); // Render lại queue với bài mới được chọn
                 this.audio.play();
 
                 this._setConfig("currentIndex", this.currentIndex);
@@ -273,7 +284,7 @@ const player = {
             this.trackBackground.style.height = newTrackHeight > 0 ? `${newTrackHeight}px` : "0";
             this.trackBackground.style.opacity = newTrackHeight / trackHeight;
             if (this.trackBackground.style.height === '0px') {
-                this.trackBackground.style.marginTop = "unset";
+                this.trackBackground.style.marginTop = "0px";
             } else {
                 this.trackBackground.style.marginTop = "20px";
             }
@@ -487,7 +498,8 @@ const player = {
             if (songNotActive) {
                 this.currentIndex = Number(songNotActive.getAttribute("data-index"));
 
-                // Reset songQueue nếu đang shuffle để tạo queue mới với bài vừa chọn
+                // CHỈ reset songQueue khi chọn bài từ PLAYLIST (không phải từ queue)
+                // Điều này sẽ tạo queue mới với bài vừa chọn làm bài đầu tiên
                 if (this.isShuffle) {
                     this.songQueue = [];
                 }
